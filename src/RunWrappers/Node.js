@@ -131,32 +131,6 @@ Runner.prototype.start = function(options, next) {
     if (!path.extname(start)) start = start + '.js';
   }
 
-  var nodeArgs = false;
-  // If the command has a -- in it then we know it is passing parameter to pm2
-  var argumentPos = start.indexOf(' -- ');
-  if (argumentPos === -1) {
-    // If the command has a space in it then we know it is passing parameters
-    // to node
-    argumentPos = start.indexOf(' ');
-    nodeArgs = true;
-  }
-
-  var location = start;
-  var scriptArgs = [];
-  if (argumentPos > -1) {
-    if (nodeArgs) {
-      scriptArgs = start.substring(argumentPos + 1, start.length).split(' ');
-    } else {
-      scriptArgs = start.substring(argumentPos + 4, start.length).split(' ');
-    }
-    location = start.substring(0, argumentPos);
-  }
-
-  if (!self.bosco.exists(options.cwd + '/' + location)) {
-    self.bosco.warn('Can\'t start ' + options.name.red + ', as I can\'t find script: ' + location.red);
-    return next();
-  }
-
   var startOptions = {
     name: options.name,
     interpreter: 'bash',
