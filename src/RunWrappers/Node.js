@@ -131,16 +131,24 @@ Runner.prototype.start = function(options, next) {
     if (!path.extname(start)) start = start + '.js';
   }
 
-  // Always execute as a forked process to allow node version selection
-  var executeCommand = true;
-
-  // If the command has a -- in it then we know it is passing parameters
-  // to pm2
+  var nodeArgs = false;
+  // If the command has a -- in it then we know it is passing parameter to pm2
   var argumentPos = start.indexOf(' -- ');
+  if (argumentPos === -1) {
+    // If the command has a space in it then we know it is passing parameters
+    // to node
+    argumentPos = start.indexOf(' ');
+    nodeArgs = true;
+  }
+
   var location = start;
   var scriptArgs = [];
   if (argumentPos > -1) {
-    scriptArgs = start.substring(argumentPos + 4, start.length).split(' ');
+    if (nodeArgs) {
+      scriptArgs = start.substring(argumentPos + 1, start.length).split(' ');
+    } else {
+      scriptArgs = start.substring(argumentPos + 4, start.length).split(' ');
+    }
     location = start.substring(0, argumentPos);
   }
 
@@ -149,7 +157,19 @@ Runner.prototype.start = function(options, next) {
     return next();
   }
 
-  var startOptions = { name: options.name, cwd: options.cwd, watch: options.watch, executeCommand: executeCommand, force: true, scriptArgs: scriptArgs };
+  var startOptions = {
+    name: options.name,
+    interpreter: 'bash',
+    script: 'npm',
+    args: ['start'],
+    cwd: options.cwd,
+    watch: options.watch,
+    // Always execute as a forked process to allow node version selection
+    executeCommand: true,
+    force: true,
+  };
+
+  console.log('startOptions', startOptions);
 
   self.getInterpreter(this.bosco, options, function(err, interpreter) {
     if (err) { return next(err); }
@@ -165,7 +185,9 @@ Runner.prototype.start = function(options, next) {
       self.bosco.log('Starting ' + options.name.cyan + ' via ...');
     }
 
-    pm2.start(location, startOptions, next);
+    console.log('START OPTS', startOptions);
+
+    pm2.start(startOptions, next);
   });
 };
 
