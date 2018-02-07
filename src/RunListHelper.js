@@ -1,6 +1,5 @@
 
 var _ = require('lodash');
-var github = require('octonode');
 var async = require('async');
 var treeify = require('treeify');
 var warnOrganisationMissing = true;
@@ -66,7 +65,6 @@ function getServiceDockerConfig(bosco, runConfig, svcConfig) {
 }
 
 function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
-  var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname')});
   var githubRepo = getGithubRepo(bosco, repo);
   var cachedConfig = getCachedConfig(bosco, repo, false);
   var configKey = 'cache:github:' + githubRepo;
@@ -84,7 +82,7 @@ function getServiceConfigFromGithub(bosco, repo, svcConfig, next) {
     next(null, cachedConfig);
   } else {
     bosco.log('Downloading remote service config from github: ' + githubRepo.cyan);
-    var ghrepo = client.repo(githubRepo);
+    var ghrepo = bosco.githubClient.repo(githubRepo);
     ghrepo.contents('bosco-service.json', function(err, boscoSvc) {
       if (err) {
         return next(err);

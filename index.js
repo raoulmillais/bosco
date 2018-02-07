@@ -9,6 +9,7 @@ var events = require('events');
 var fs = require('fs-extra');
 var knox = require('knox');
 var osenv = require('osenv');
+var github = require('octonode');
 var path = require('path');
 var Progress = require('progress');
 var prompt = require('prompt');
@@ -17,6 +18,10 @@ var semver = require('semver');
 var sf = require('sf');
 var util = require('util');
 var ip = require('ip');
+
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  require('longjohn');
+}
 
 prompt.message = 'Bosco'.green;
 
@@ -54,7 +59,7 @@ Bosco.prototype.init = function(options) {
   self.prompt = prompt;
   self.Progress = Progress;
   self.errorStack = [];
-
+  self.githubClient = github.client(self.config.get('github:authToken'), {hostname: self.config.get('github:apiHostname') });
   self.concurrency = {
     network: self.options.cpus * 4, // network constrained
     cpu: self.options.cpus - 1, // cpu constrained

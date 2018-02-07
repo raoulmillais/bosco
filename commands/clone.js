@@ -1,7 +1,6 @@
 var _ = require('lodash');
 var async = require('async');
 var fs = require('fs-extra');
-var github = require('octonode');
 var path = require('path');
 var exec = require('child_process').exec;
 var green = '\u001b[42m \u001b[0m';
@@ -164,8 +163,6 @@ function cmd(bosco, args, next) {
   var team = bosco.getTeam() || 'no-team';
   var teamConfig = bosco.config.get('teams:' + team);
 
-  var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname') });
-
   if (!teamConfig) {
     // The user does not have a team, so just treat the repos config
     // as manually edited
@@ -184,7 +181,7 @@ function cmd(bosco, args, next) {
   async.whilst(
     function() { return more; },
     function(callback) {
-      getRepoList(client, teamConfig, page, function(err, repos, isMore) {
+      getRepoList(bosco.githubClient, teamConfig, page, function(err, repos, isMore) {
         if (err) { return callback(err); }
         repoList = _.union(repoList, repos);
         if (isMore) {

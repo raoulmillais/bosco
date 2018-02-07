@@ -1,4 +1,3 @@
-var github = require('octonode');
 var _ = require('lodash');
 var fs = require('fs-extra');
 var path = require('path');
@@ -56,11 +55,10 @@ function getTeams(client, cb) {
 }
 
 function syncTeams(bosco, next) {
-  var client = github.client(bosco.config.get('github:authToken'), {hostname: bosco.config.get('github:apiHostname')});
   var currentTeams = bosco.config.get('teams') || {};
   var added = 0;
 
-  getTeams(client, function(err, teams) {
+  getTeams(bosco.githubClient, function(err, teams) {
     if (err) { return bosco.error('Unable to access github with given authKey: ' + err.message); }
 
     _.each(teams, function(team) {
